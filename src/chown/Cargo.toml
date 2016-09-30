@@ -1,0 +1,25 @@
+[package]
+name = "chown"
+version = "0.0.1"
+authors = []
+
+[lib]
+name = "uu_chown"
+path = "chown.rs"
+
+[dependencies]
+glob = "*"
+walkdir = "0.1"
+
+[dependencies.uucore]
+path = "../uucore"
+default-features = false
+features = ["entries", "fs"]
+
+[dependencies.clippy]
+version = "*"
+optional = true
+
+[[bin]]
+name = "chown"
+path = "main.rs"

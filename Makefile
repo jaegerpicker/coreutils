@@ -1,6 +1,7 @@
 # Config options
 PROFILE         ?= debug
 MULTICALL       ?= n
+INSTALL         ?= install
 ifneq (,$(filter install, $(MAKECMDGOALS)))
 override PROFILE:=release
 endif
@@ -10,13 +11,15 @@ ifeq ($(PROFILE),release)
 	PROFILE_CMD = --release
 endif
 
+RM := rm -rf
+
 # Binaries
 CARGO  ?= cargo
 CARGOFLAGS ?=
 
 # Install directories
 PREFIX ?= /usr/local
-DESTDIR ?= 
+DESTDIR ?=
 BINDIR ?= /bin
 LIBDIR ?= /lib
 
@@ -29,15 +32,16 @@ PROG_PREFIX ?=
 # This won't support any directory with spaces in its name, but you can just
 # make a symlink without spaces that points to the directory.
 BASEDIR       ?= $(shell pwd)
-BUILDDIR      := $(BASEDIR)/target/${PROFILE}/
-PKG_BUILDDIR  := $(BUILDDIR)/deps/
+BUILDDIR      := $(BASEDIR)/target/${PROFILE}
+PKG_BUILDDIR  := $(BUILDDIR)/deps
 
-BUSYBOX_ROOT := $(BASEDIR)/tmp/
-BUSYBOX_VER := 1.24.1
-BUSYBOX_SRC:=$(BUSYBOX_ROOT)/busybox-$(BUSYBOX_VER)/
+BUSYBOX_ROOT := $(BASEDIR)/tmp
+BUSYBOX_VER  := 1.24.1
+BUSYBOX_SRC  := $(BUSYBOX_ROOT)/busybox-$(BUSYBOX_VER)
 
 # Possible programs
 PROGS       := \
+  base32 \
   base64 \
   basename \
   cat \
@@ -45,6 +49,7 @@ PROGS       := \
   comm \
   cp \
   cut \
+  dircolors \
   dirname \
   echo \
   env \
@@ -58,8 +63,10 @@ PROGS       := \
   head \
   link \
   ln \
+  ls \
   mkdir \
   mktemp \
+  more \
   nl \
   nproc \
   od \
@@ -96,19 +103,27 @@ PROGS       := \
   yes
 
 UNIX_PROGS := \
+  arch \
+  chgrp \
   chmod \
+  chown \
   chroot \
   du \
   groups \
   hostid \
   hostname \
   id \
+  install \
   kill \
   logname \
   mkfifo \
+  mknod \
   mv \
   nice \
   nohup \
+  pathchk \
+  pinky \
+  stat \
   stdbuf \
   timeout \
   touch \
@@ -116,7 +131,8 @@ UNIX_PROGS := \
   uname \
   unlink \
   uptime \
-  users
+  users \
+  who
 
 ifneq ($(OS),Windows_NT)
 	PROGS    := $(PROGS) $(UNIX_PROGS)
@@ -126,14 +142,18 @@ UTILS ?= $(PROGS)
 
 # Programs with usable tests
 TEST_PROGS  := \
+	base32 \
 	base64 \
 	basename \
 	cat \
+	chgrp \
 	chmod \
+	chown \
 	cksum \
 	comm \
 	cp \
 	cut \
+	dircolors \
 	dirname \
 	echo \
 	env \
@@ -143,13 +163,18 @@ TEST_PROGS  := \
 	fold \
 	hashsum \
 	head \
+	install \
 	link \
 	ln \
+	ls \
 	mkdir \
 	mktemp \
 	mv \
 	nl \
+	od \
 	paste \
+	pathchk \
+	pinky \
 	printf \
 	ptx \
 	pwd \
@@ -160,6 +185,7 @@ TEST_PROGS  := \
 	seq \
 	sort \
 	split \
+	stat \
 	stdbuf \
 	sum \
 	tac \
@@ -173,13 +199,14 @@ TEST_PROGS  := \
 	unexpand \
 	uniq \
 	unlink \
-	wc
+	wc \
+	who
 
 TESTS       := \
 	$(sort $(filter $(UTILS),$(filter-out $(SKIP_UTILS),$(TEST_PROGS))))
 
 TEST_NO_FAIL_FAST :=
-TEST_SPEC_FEATURE := 
+TEST_SPEC_FEATURE :=
 ifneq ($(SPEC),)
 TEST_NO_FAIL_FAST :=--no-fail-fast
 TEST_SPEC_FEATURE := test_unimplemented
@@ -188,11 +215,6 @@ endif
 define BUILD_EXE
 build_exe_$(1):
 	${CARGO} build ${CARGOFLAGS} ${PROFILE_CMD} -p $(1)
-endef
-
-define TEST_INTEGRATION
-test_integration_$(1): build_exe_$(1)
-	${CARGO} test ${CARGOFLAGS} --test $(1) --features "$(1) $(TEST_SPEC_FEATURE)" --no-default-features $(TEST_NO_FAIL_FAST)
 endef
 
 define TEST_BUSYBOX
@@ -204,7 +226,10 @@ endef
 EXES        := \
   $(sort $(filter $(UTILS),$(filter-out $(SKIP_UTILS),$(PROGS))))
 
-INSTALLEES  := ${EXES} uutils
+INSTALLEES  := ${EXES}
+ifeq (${MULTICALL}, y)
+INSTALLEES  := ${INSTALLEES} uutils
+endif
 
 # Shared library extension
 SYSTEM := $(shell uname)
@@ -226,22 +251,22 @@ endif
 
 all: build
 
-do_install = install ${1}
+do_install = $(INSTALL) ${1}
 use_default := 1
 
 $(foreach util,$(EXES),$(eval $(call BUILD_EXE,$(util))))
 
 build-pkgs: $(addprefix build_exe_,$(EXES))
 
-build-uutils: 
+build-uutils:
 	${CARGO} build ${CARGOFLAGS} --features "${EXES}" ${PROFILE_CMD} --no-default-features
 
 build: build-uutils build-pkgs
 
-$(foreach test,$(TESTS),$(eval $(call TEST_INTEGRATION,$(test))))
 $(foreach test,$(filter-out $(SKIP_UTILS),$(PROGS)),$(eval $(call TEST_BUSYBOX,$(test))))
 
-test: $(addprefix test_integration_,$(TESTS))
+test:
+	${CARGO} test ${CARGOFLAGS} --features "$(TESTS) $(TEST_SPEC_FEATURE)" --no-default-features $(TEST_NO_FAIL_FAST)
 
 busybox-src:
 	if [ ! -e $(BUSYBOX_SRC) ]; then \
@@ -251,11 +276,11 @@ busybox-src:
 	fi; \
 
 # This is a busybox-specific config file their test suite wants to parse.
-$(BUILDDIR)/.config: $(BASEDIR)/.busybox-config 
+$(BUILDDIR)/.config: $(BASEDIR)/.busybox-config
 	cp $< $@
 
 # Test under the busybox testsuite
-$(BUILDDIR)/busybox: busybox-src build-uutils $(BUILDDIR)/.config 
+$(BUILDDIR)/busybox: busybox-src build-uutils $(BUILDDIR)/.config
 	cp $(BUILDDIR)/uutils $(BUILDDIR)/busybox; \
 	chmod +x $@;
 
@@ -266,22 +291,23 @@ busytest: $(BUILDDIR)/busybox $(addprefix test_busybox_,$(filter-out $(SKIP_UTIL
 endif
 
 clean:
-	$(RM) -rf $(BUILDDIR) 
+	$(RM) $(BUILDDIR)
 
 distclean: clean
 	$(CARGO) clean $(CARGOFLAGS) && $(CARGO) update $(CARGOFLAGS)
 
-install: build 
+install: build
 	mkdir -p $(INSTALLDIR_BIN)
 ifeq (${MULTICALL}, y)
-	install $(BUILDDIR)/uutils $(INSTALLDIR_BIN)/$(PROG_PREFIX)uutils
-	$(foreach prog, $(INSTALLEES), cd $(INSTALLDIR_BIN) && ln -fs $(PROG_PREFIX)uutils $(PROG_PREFIX)$(prog);)
+	$(INSTALL) $(BUILDDIR)/uutils $(INSTALLDIR_BIN)/$(PROG_PREFIX)uutils
+	$(foreach prog, $(filter-out uutils, $(INSTALLEES)), \
+		cd $(INSTALLDIR_BIN) && ln -fs $(PROG_PREFIX)uutils $(PROG_PREFIX)$(prog);)
 else
 	$(foreach prog, $(INSTALLEES), \
-		install $(PKG_BUILDDIR)/$(prog) $(INSTALLDIR_BIN)/$(PROG_PREFIX)$(prog);)
+		$(INSTALL) $(PKG_BUILDDIR)/$(prog) $(INSTALLDIR_BIN)/$(PROG_PREFIX)$(prog);)
 endif
 	mkdir -p $(INSTALLDIR_LIB)
-	$(foreach lib, $(LIBS), install $(BUILDDIR)/$$lib $(INSTALLDIR_LIB)/$(lib);)
+	$(foreach lib, $(LIBS), $(INSTALL) $(BUILDDIR)/$(lib) $(INSTALLDIR_LIB)/$(lib);)
 
 uninstall:
 ifeq (${MULTICALL}, y)

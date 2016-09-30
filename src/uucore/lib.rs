@@ -1,17 +1,31 @@
-extern crate libc;
-extern crate time;
-#[cfg(windows)] extern crate winapi;
+#[cfg(feature = "libc")]
+pub extern crate libc;
 
 #[macro_use]
 mod macros;
 
+#[macro_use]
+pub mod coreopts;
+
+#[cfg(feature = "fs")]
 pub mod fs;
-pub mod parse_time;
+#[cfg(feature = "utf8")]
 pub mod utf8;
+#[cfg(feature = "encoding")]
+pub mod encoding;
+#[cfg(feature = "parse_time")]
+pub mod parse_time;
 
-#[cfg(unix)] pub mod c_types;
-#[cfg(unix)] pub mod process;
-#[cfg(unix)] pub mod signals;
-#[cfg(unix)] pub mod utmpx;
+#[cfg(all(unix, feature = "utmpx"))]
+pub mod utmpx;
+#[cfg(all(unix, feature = "utsname"))]
+pub mod utsname;
+#[cfg(all(unix, feature = "entries"))]
+pub mod entries;
+#[cfg(all(unix, feature = "process"))]
+pub mod process;
+#[cfg(all(unix, feature = "signals"))]
+pub mod signals;
 
-#[cfg(windows)] pub mod wide;
+#[cfg(all(windows, feature = "wide"))]
+pub mod wide;

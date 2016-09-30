@@ -12,7 +12,7 @@ pub fn main() {
         if val == "1" && key.starts_with(feature_prefix) {
             let krate = key[feature_prefix.len()..].to_lowercase();
             match krate.as_ref() {
-                "default" | "unix" | "generic" | "test_unimplemented" => continue,
+                "default" | "unix" | "generic" | "nightly" | "test_unimplemented" => continue,
                 _ => {},
             }
             crates.push(krate.to_string());
@@ -40,9 +40,16 @@ pub fn main() {
                               map.insert(\"sha224sum\", uu_hashsum::uumain);
                               map.insert(\"sha256sum\", uu_hashsum::uumain);
                               map.insert(\"sha384sum\", uu_hashsum::uumain);
-                              map.insert(\"sha512sum\", uu_hashsum::uumain);\n".as_bytes()).unwrap();
+                              map.insert(\"sha512sum\", uu_hashsum::uumain);
+                              map.insert(\"sha3sum\", uu_hashsum::uumain);
+                              map.insert(\"sha3-224sum\", uu_hashsum::uumain);
+                              map.insert(\"sha3-256sum\", uu_hashsum::uumain);
+                              map.insert(\"sha3-384sum\", uu_hashsum::uumain);
+                              map.insert(\"sha3-512sum\", uu_hashsum::uumain);
+                              map.insert(\"shake128sum\", uu_hashsum::uumain);
+                              map.insert(\"shake256sum\", uu_hashsum::uumain);\n".as_bytes()).unwrap();
             },
-            _ => 
+            _ =>
                 mf.write_all(format!("map.insert(\"{krate}\", uu_{krate}::uumain);\n", krate=krate).as_bytes()).unwrap(),
         }
     }

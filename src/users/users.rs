@@ -4,6 +4,7 @@
  * This file is part of the uutils coreutils package.
  *
  * (c) KokaKiwi <kokakiwi@kokakiwi.net>
+ * (c) Jian Zeng <anonymousknight86@gmail.com>
  *
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
@@ -15,35 +16,12 @@
 #![allow(dead_code)]
 
 extern crate getopts;
-extern crate libc;
 
 #[macro_use]
 extern crate uucore;
-
-use getopts::Options;
-use std::ffi::{CStr, CString};
-use std::mem;
-use std::ptr;
 use uucore::utmpx::*;
 
-extern {
-    fn getutxent() -> *const c_utmp;
-    fn getutxid(ut: *const c_utmp) -> *const c_utmp;
-    fn getutxline(ut: *const c_utmp) -> *const c_utmp;
-
-    fn pututxline(ut: *const c_utmp) -> *const c_utmp;
-
-    fn setutxent();
-    fn endutxent();
-
-    #[cfg(any(target_os = "macos", target_os = "linux"))]
-    fn utmpxname(file: *const libc::c_char) -> libc::c_int;
-}
-
-#[cfg(target_os = "freebsd")]
-unsafe extern fn utmpxname(_file: *const libc::c_char) -> libc::c_int {
-    0
-}
+use getopts::Options;
 
 static NAME: &'static str = "users";
 static VERSION: &'static str = env!("CARGO_PKG_VERSION");
@@ -86,30 +64,11 @@ pub fn uumain(args: Vec<String>) -> i32 {
 }
 
 fn exec(filename: &str) {
-    unsafe {
-        utmpxname(CString::new(filename).unwrap().as_ptr());
-    }
-
-    let mut users = vec!();
-
-    unsafe {
-        setutxent();
-
-        loop {
-            let line = getutxent();
-
-            if line == ptr::null() {
-                break;
-            }
-
-            if (*line).ut_type == USER_PROCESS {
-                let user = String::from_utf8_lossy(CStr::from_ptr(mem::transmute(&(*line).ut_user)).to_bytes()).to_string();
-                users.push(user);
-            }
-        }
-
-        endutxent();
-    }
+    let mut users = Utmpx::iter_all_records()
+        .read_from(filename)
+        .filter(|ut| ut.is_user_process())
+        .map(|ut| ut.user())
+        .collect::<Vec<_>>();
 
     if !users.is_empty() {
         users.sort();

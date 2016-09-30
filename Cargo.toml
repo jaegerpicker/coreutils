@@ -6,20 +6,28 @@ build = "build.rs"
 
 [features]
 unix = [
+  "arch",
+  "chgrp",
   "chmod",
+  "chown",
   "chroot",
   "du",
   "groups",
   "hostid",
   "hostname",
   "id",
+  "install",
   "kill",
   "logname",
   "mkfifo",
-  "mktemp",
+  "mknod",
+  "more",
   "mv",
   "nice",
   "nohup",
+  "pathchk",
+  "pinky",
+  "stat",
   "stdbuf",
   "timeout",
   "touch",
@@ -28,8 +36,10 @@ unix = [
   "unlink",
   "uptime",
   "users",
+  "who",
 ]
 generic = [
+  "base32",
   "base64",
   "basename",
   "cat",
@@ -37,6 +47,7 @@ generic = [
   "comm",
   "cp",
   "cut",
+  "dircolors",
   "dirname",
   "echo",
   "env",
@@ -44,13 +55,15 @@ generic = [
   "expr",
   "factor",
   "false",
-  "fmt",	# skip_on_beta
+  "fmt",
   "fold",
   "hashsum",
   "head",
   "link",
   "ln",
+  "ls",
   "mkdir",
+  "mktemp",
   "nl",
   "nproc",
   "od",
@@ -76,7 +89,7 @@ generic = [
   "tail",
   "tee",
   "test",
-  "tr",          # skip_on_beta
+  "tr",
   "true",
   "truncate",
   "tsort",
@@ -86,20 +99,26 @@ generic = [
   "whoami",
   "yes",
 ]
-default = ["generic", "unix"]
 test_unimplemented = []
+nightly = []
+default = ["generic", "unix"]
 
 [dependencies]
 uucore   = { path="src/uucore" }
+arch     = { optional=true, path="src/arch" }
+base32   = { optional=true, path="src/base32" }
 base64   = { optional=true, path="src/base64" }
 basename = { optional=true, path="src/basename" }
 cat      = { optional=true, path="src/cat" }
+chgrp    = { optional=true, path="src/chgrp" }
 chmod    = { optional=true, path="src/chmod" }
+chown    = { optional=true, path="src/chown" }
 chroot   = { optional=true, path="src/chroot" }
 cksum    = { optional=true, path="src/cksum" }
 comm     = { optional=true, path="src/comm" }
 cp       = { optional=true, path="src/cp" }
 cut      = { optional=true, path="src/cut" }
+dircolors= { optional=true, path="src/dircolors" }
 dirname  = { optional=true, path="src/dirname" }
 du       = { optional=true, path="src/du" }
 echo     = { optional=true, path="src/echo" }
@@ -116,13 +135,17 @@ head     = { optional=true, path="src/head" }
 hostid   = { optional=true, path="src/hostid" }
 hostname = { optional=true, path="src/hostname" }
 id       = { optional=true, path="src/id" }
+install  = { optional=true, path="src/install" }
 kill     = { optional=true, path="src/kill" }
 link     = { optional=true, path="src/link" }
 ln       = { optional=true, path="src/ln" }
+ls       = { optional=true, path="src/ls" }
 logname  = { optional=true, path="src/logname" }
 mkdir    = { optional=true, path="src/mkdir" }
-mktemp   = { optional=true, path="src/mktemp" }
 mkfifo   = { optional=true, path="src/mkfifo" }
+mknod    = { optional=true, path="src/mknod" }
+mktemp   = { optional=true, path="src/mktemp" }
+more     = { optional=true, path="src/more" }
 mv       = { optional=true, path="src/mv" }
 nice     = { optional=true, path="src/nice" }
 nl       = { optional=true, path="src/nl" }
@@ -130,6 +153,8 @@ nohup    = { optional=true, path="src/nohup" }
 nproc    = { optional=true, path="src/nproc" }
 od       = { optional=true, path="src/od" }
 paste    = { optional=true, path="src/paste" }
+pathchk  = { optional=true, path="src/pathchk" }
+pinky    = { optional=true, path="src/pinky" }
 printenv = { optional=true, path="src/printenv" }
 printf   = { optional=true, path="src/printf" }
 ptx      = { optional=true, path="src/ptx" }
@@ -145,6 +170,7 @@ shuf     = { optional=true, path="src/shuf" }
 sleep    = { optional=true, path="src/sleep" }
 sort     = { optional=true, path="src/sort" }
 split    = { optional=true, path="src/split" }
+stat     = { optional=true, path="src/stat" }
 stdbuf   = { optional=true, path="src/stdbuf" }
 sum      = { optional=true, path="src/sum" }
 sync     = { optional=true, path="src/sync" }
@@ -166,19 +192,14 @@ unlink   = { optional=true, path="src/unlink" }
 uptime   = { optional=true, path="src/uptime" }
 users    = { optional=true, path="src/users" }
 wc       = { optional=true, path="src/wc" }
+who      = { optional=true, path="src/who" }
 whoami   = { optional=true, path="src/whoami" }
 yes      = { optional=true, path="src/yes" }
 
 [dev-dependencies]
 time = "*"
-kernel32-sys = "*"
-winapi = "*"
 filetime = "*"
 libc = "*"
-memchr = "*"
-primal = "*"
-aho-corasick= "*"
-regex-syntax= "*"
 regex="*"
 rand="*"
 tempdir="*"
@@ -186,3 +207,6 @@ tempdir="*"
 [[bin]]
 name = "uutils"
 path = "src/uutils/uutils.rs"
+
+[[test]]
+name = "tests"

@@ -9,9 +9,11 @@ path = "uptime.rs"
 
 [dependencies]
 getopts = "*"
-libc = "*"
-time = "*"
-uucore = { path="../uucore" }
+
+[dependencies.uucore]
+path = "../uucore"
+default-features = false
+features = ["utmpx"]
 
 [[bin]]
 name = "uptime"

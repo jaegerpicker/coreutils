@@ -23,8 +23,6 @@ to compile anywhere, and this is as good a way as any to try and learn it.
 Build Instructions
 ------------------
 
-NOTE: This currently requires the most current nightly build.
-
 To simply build all available utilities:
 ```
 make
@@ -149,41 +147,107 @@ To contribute to coreutils, please see [CONTRIBUTING](CONTRIBUTING.md).
 To do
 -----
 
-- chcon
-- chgrp
-- chown
-- copy
-- cp (not much done)
-- csplit
-- date
-- dd
-- df
-- dircolors
-- expr (almost done, no regular expressions)
-- getlimits
-- install
-- join
-- ls
-- mknod
-- mktemp (almost done, some options are not working)
-- mv (almost done, one more option)
-- numfmt
-- od (in progress, needs lots of work)
-- pathchk
-- pinky
-- pr
-- printf
-- remove
-- runcon
-- setuidgid
-- sort (a couple of options implemented)
-- split (a couple of missing options)
-- stat
-- stty
-- tail (not all features implemented)
-- test (not all features implemented)
-- uniq (a couple of missing options)
-- who
+* [x] arch
+* [x] base32
+* [x] base64
+* [x] basename
+* [x] cat
+* [ ] chcon
+* [x] chgrp
+* [x] chmod
+* [x] chown
+* [x] chroot
+* [x] cksum
+* [x] comm
+* [ ] cp (not much done)
+* [ ] csplit
+* [x] cut
+* [ ] date
+* [ ] dd
+* [ ] df
+* [x] dircolors
+* [x] dirname
+* [x] du
+* [x] echo
+* [x] env
+* [x] expand
+* [ ] expr (almost done, no regular expressions)
+* [x] factor
+* [x] false
+* [x] fmt
+* [x] fold
+* [x] groups
+* [x] hashsum
+* [x] head
+* [x] hostid
+* [x] hostname
+* [x] id
+* [ ] install (a couple of missing options)
+* [ ] join
+* [x] kill
+* [x] link
+* [x] ln
+* [x] logname
+* [ ] ls
+* [x] ~~md5sum~~, ~~sha1sum~~, ~~sha224sum~~, ~~sha256sum~~, ~~sha384sum~~, ~~sha512sum~~ (replaced by [hashsum](https://github.com/uutils/coreutils/blob/master/src/hashsum/hashsum.rs))
+* [x] mkdir
+* [x] mkfifo
+* [x] mknod
+* [x] mktemp
+* [x] mv
+* [ ] more (in progress, needs lots of work)
+* [x] nice
+* [x] nl
+* [x] nohup
+* [x] nproc
+* [ ] numfmt
+* [ ] od (in progress, needs lots of work)
+* [x] paste
+* [x] pathchk
+* [x] pinky
+* [ ] pr
+* [x] printenv
+* [ ] printf
+* [x] ptx
+* [x] pwd
+* [x] readlink
+* [x] realpath
+* [x] relpath
+* [x] rm
+* [x] rmdir
+* [ ] runcon
+* [x] seq
+* [x] shred
+* [x] shuf
+* [x] sleep
+* [ ] sort (a couple of options implemented)
+* [ ] split (a couple of missing options)
+* [x] stat
+* [x] stdbuf
+* [ ] stty
+* [x] sum
+* [x] sync
+* [x] tac
+* [ ] tail (not all features implemented)
+* [x] tee
+* [ ] test (not all features implemented)
+* [x] timeout
+* [x] touch
+* [x] tr
+* [x] true
+* [x] truncate
+* [x] tsort
+* [x] tty
+* [x] uname
+* [x] unexpand
+* [x] uniq
+* [x] unlink
+* [x] uptime
+* [x] users
+* [x] wc
+* [x] who
+* [x] whoami
+* [x] yes
 
 License
 -------
